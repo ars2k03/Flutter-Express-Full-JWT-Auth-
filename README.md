@@ -1,6 +1,6 @@
 # Flutter Express Full JWT Auth
 
-A complete authentication system built with a **Flutter frontend** and an **Express.js + TypeScript backend**, featuring **JWT authentication**, **email verification**, **resend OTP**, **forgot password**, **password reset**, and **persistent login**. The repository is organized into separate `Frontend` and `Backend` apps, with the backend using Express, Mongoose, bcrypt, JSON Web Token, Nodemailer, dotenv, and tsx. The frontend uses Flutter with `http` and `shared_preferences` for API calls and token persistence. citeturn441124view0turn170323view0turn170323view1turn550901view0turn550901view2turn890298view0turn905436view0
+A complete authentication system built with a **Flutter frontend** and an **Express.js + TypeScript backend**, featuring **JWT authentication**, **email verification**, **resend OTP**, **forgot password**, **password reset**, and **persistent login**. The repository is organized into separate `Frontend` and `Backend` apps, with the backend using Express, Mongoose, bcrypt, JSON Web Token, Nodemailer, dotenv, and tsx. The frontend uses Flutter with `http` and `shared_preferences` for API calls and token persistence.
 
 ## Features
 
