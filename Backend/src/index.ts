@@ -26,6 +26,6 @@ app.use(express.json());
 
 app.use('/', router);
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server is Running on port ${port}`)
 })

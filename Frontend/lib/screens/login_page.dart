@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../auth_service.dart';
 import 'signup_page.dart';
@@ -34,8 +35,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     final emailRegex = RegExp(
-        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    );
+        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 
     if (!emailRegex.hasMatch(value)) {
       return 'Please enter a valid email address';
@@ -75,15 +75,13 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text.trim(),
       );
 
-      // JWT TOKEN
-      final token = response["data"]["token"];
-
-      // SAVE TOKEN
-      final prefs = await SharedPreferences.getInstance();
-
-      await prefs.setString("token", token);
-
       if (response["success"] == true) {
+        final token = response["data"]["token"];
+        final refreshToken = response["data"]["refreshToken"];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("token", token);
+        await prefs.setString("refreshToken", refreshToken);
 
         if (mounted) {
           Navigator.pushReplacement(
@@ -93,17 +91,56 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         }
-
       } else {
-
         setState(() {
           _errorMessage = response["message"];
         });
-
       }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
+    try {
+      final response = await AuthService.loginWithGoogle();
+      if (response["success"] == true) {
+        final token = response["data"]["token"];
+        final refreshToken = response["data"]["refreshToken"];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("token", token);
+        await prefs.setString("refreshToken", refreshToken);
+
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const HomePage(),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = response["message"];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Google Sign-In failed: ${e.toString()}";
       });
     } finally {
       if (mounted) {
@@ -128,6 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+
                   const Icon(
                     Icons.lock_outline,
                     size: 80,
@@ -170,7 +208,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                          Icon(Icons.error_outline,
+                              color: Colors.red.shade700, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -182,7 +221,8 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close, size: 18, color: Colors.red.shade700),
+                            icon: Icon(Icons.close,
+                                size: 18, color: Colors.red.shade700),
                             onPressed: () {
                               setState(() {
                                 _errorMessage = null;
@@ -214,7 +254,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide:
+                        const BorderSide(color: Colors.blue, width: 2),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -222,7 +263,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                        borderSide:
+                        const BorderSide(color: Colors.red, width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -244,7 +286,9 @@ class _LoginPageState extends State<LoginPage> {
                       prefixIcon: const Icon(Icons.lock_outlined),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Colors.grey,
                         ),
                         onPressed: () {
@@ -262,7 +306,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide:
+                        const BorderSide(color: Colors.blue, width: 2),
                       ),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -270,7 +315,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.red, width: 2),
+                        borderSide:
+                        const BorderSide(color: Colors.red, width: 2),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -297,7 +343,8 @@ class _LoginPageState extends State<LoginPage> {
                         width: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white),
                         ),
                       )
                           : const Text(
@@ -305,6 +352,54 @@ class _LoginPageState extends State<LoginPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading ? null : _handleGoogleSignIn,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.google,
+                        color: Colors.blueAccent,
+                        size: 22,
+                      ),
+                      label: const Text(
+                        'Continue with Google',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),

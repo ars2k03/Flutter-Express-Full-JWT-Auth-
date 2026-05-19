@@ -6,11 +6,15 @@ import { verifyCode } from "../controller/verifyCode.ts";
 import { resendCode } from "../controller/resendCode.ts";
 import { forgetPassword } from "../controller/forgetPassword.ts";
 import { resetPass } from "../controller/resetPass.ts";
+import { googleLogin } from "../controller/googleLogin.ts";
+import { refreshAccessToken } from "../controller/refreshToken.ts";
 
 const router = express.Router();
 
+router.post("/google-login", googleLogin);
 router.post('/signUp', signUp);
 router.post('/login', login);
+router.post("/refresh", refreshAccessToken);
 router.post("/verifycode", verifyCode);
 router.patch("/resetpassword", resetPass);
 router.post("/forget-password", forgetPassword);

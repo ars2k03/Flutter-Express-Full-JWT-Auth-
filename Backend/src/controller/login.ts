@@ -33,13 +33,25 @@ export const login = async (req : Request, res : Response) => {
             "ars2k03", //Private Key
 
             {
-                expiresIn : "7d"
+                expiresIn : "1m"
+            }
+        );
+
+        const refreshToken = jwt.sign(
+            {
+                id : user._id,
+                role : user.role,
+            },
+            "arsarafat",
+            {
+                expiresIn : "30d"
             }
         );
 
         res.status(200).json({
             message: "Login successful",
             token,
+            refreshToken,
             user: {
                 id: user._id,
                 email: user.email,
