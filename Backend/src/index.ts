@@ -25,6 +25,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use('/', router);
+app.use("/uploads", express.static("uploads"));
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server is Running on port ${port}`)

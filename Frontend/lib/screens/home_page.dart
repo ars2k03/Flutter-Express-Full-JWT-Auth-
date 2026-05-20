@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:practice/auth_service.dart';
@@ -6,7 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String name;
+  final String email;
+  final String role;
+  final String picture;
+  const HomePage({super.key, required this.name, required this.email, required this.role, required this.picture});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -14,16 +19,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   File? _pickedImage;
-  final String _userName = "User Name";
-  final String _userEmail = "user@example.com";
-  final String _userPhone = "+880 1XXX-XXXXXX";
   final ImagePicker _picker = ImagePicker();
 
   String message = "Loading...";
+  String profilePicture = "";
 
   @override
   void initState() {
     super.initState();
+
+    profilePicture = widget.picture;
 
     loadProfile();
   }
@@ -32,11 +37,9 @@ class _HomePageState extends State<HomePage> {
     final response = await AuthService.getProfile();
 
     if (response["success"] == true) {
-
       setState(() {
         message = response["data"]["message"];
       });
-
     } else {
 
       setState(() {
@@ -56,6 +59,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _pickedImage = File(image.path);
         });
+        await uploadProfile();
       }
     } catch (e) {
       if (context.mounted) {
@@ -63,6 +67,64 @@ class _HomePageState extends State<HomePage> {
           SnackBar(content: Text('Error selecting image: $e')),
         );
       }
+    }
+  }
+
+  Future<void> uploadProfile() async {
+
+    if (_pickedImage == null) return;
+
+    try {
+
+      final prefs = await SharedPreferences.getInstance();
+
+      final token = prefs.getString("token");
+
+      FormData formData = FormData.fromMap({
+        "picture": await MultipartFile.fromFile(
+          _pickedImage!.path,
+        )
+      });
+
+      final response = await Dio().patch(
+
+        "http://172.21.100.188:8000/upload-profile",
+
+        data: formData,
+
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+          },
+        ),
+
+      );
+
+      setState(() {
+
+        profilePicture =
+        response.data["user"]["picture"];
+
+        _pickedImage = null;
+
+      });
+
+      if (context.mounted) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+
+          const SnackBar(
+            content: Text("Profile Uploaded"),
+          ),
+
+        );
+
+      }
+
+    } catch (e) {
+
+      print(e);
+
     }
   }
 
@@ -122,18 +184,38 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: ClipOval(
                     child: _pickedImage != null
+
+                    // User picked image
                         ? Image.file(
                       _pickedImage!,
                       fit: BoxFit.cover,
                       width: 150,
                       height: 150,
                     )
+
+                    // Backend picture
+                        : profilePicture.isNotEmpty
+
+                        ? Image.network(
+                      profilePicture,
+                      fit: BoxFit.cover,
+                      width: 150,
+                      height: 150,
+                    )
+
+                    // Text avatar
                         : Container(
                       color: Colors.grey[200],
-                      child: const Icon(
-                        Icons.person,
-                        size: 80,
-                        color: Colors.grey,
+                      child: Center(
+                        child: Text(
+                          widget.name.isNotEmpty
+                              ? widget.name[0].toUpperCase()
+                              : "?",
+                          style: const TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -148,11 +230,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 32),
-              _buildInfoBox(Icons.person, "Name", _userName),
+              _buildInfoBox(Icons.person, "Name", widget.name.isEmpty ? "No Name" : widget.name),
               const SizedBox(height: 12),
-              _buildInfoBox(Icons.email, "Email", _userEmail),
+              _buildInfoBox(Icons.email, "Email", widget.email.isEmpty ? "No Email" : widget.email),
               const SizedBox(height: 12),
-              _buildInfoBox(Icons.phone, "Phone", _userPhone),
+              _buildInfoBox(Icons.person, "Role", widget.role.isEmpty ?  "No Role" : widget.role),
               const SizedBox(height: 32),
               Text(
                 message,

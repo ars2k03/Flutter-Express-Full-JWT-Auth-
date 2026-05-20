@@ -37,7 +37,7 @@ export const refreshAccessToken = async (
           "ars2k03",
 
           {
-            expiresIn: "1m",
+            expiresIn: "15m",
           }
         );
 

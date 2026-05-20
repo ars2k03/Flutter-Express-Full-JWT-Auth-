@@ -3,6 +3,8 @@ import 'package:practice/screens/home_page.dart';
 import 'package:practice/screens/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'auth_service.dart';
+
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,14 +14,12 @@ Future<void> main() async {
   final token = prefs.getString("token");
 
   runApp(
-    MyApp(
-      token: token,
-    ),
+    MyApp(token: token),
   );
 
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
 
   final String? token;
 
@@ -27,6 +27,64 @@ class MyApp extends StatelessWidget {
     super.key,
     required this.token,
   });
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+
+}
+
+class _MyAppState extends State<MyApp> {
+
+  late String name;
+  late String email;
+  late String role;
+  late String picture;
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.token != null) {
+      loadProfile();
+    } else {
+
+      setState(() {
+        isLoading = false;
+      });
+
+    }
+
+  }
+
+  Future<void> loadProfile() async {
+
+    final response = await AuthService.getProfile();
+
+    if (response["success"] == true) {
+
+      final user = response["data"]["user"];
+
+      setState(() {
+        name = user["name"] ?? "Default";
+        email = user["email"] ?? "Default";
+        role = user["role"] ?? "user";
+        picture = user["picture"] ?? "";
+
+        isLoading = false;
+
+      });
+
+    } else {
+
+      setState(() {
+        isLoading = false;
+      });
+
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +103,23 @@ class MyApp extends StatelessWidget {
 
       ),
 
-      home: token != null
-          ? const HomePage()
+      home: isLoading
+
+          ? const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      )
+
+          : widget.token != null
+
+          ? HomePage(
+        name: name,
+        email: email,
+        role: role,
+        picture: picture,
+      )
+
           : const LoginPage(),
 
     );

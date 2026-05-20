@@ -47,8 +47,12 @@ export const googleLogin = async (
       user = await User.create({
         name: payload.name as string,
         email: payload.email as string,
-        password: hashedPassword
+        password: hashedPassword,
+        picture : payload.picture as string
       });
+    }else if (!user.picture && payload.picture) {
+      user.picture = payload.picture;
+      await user.save();
     }
 
     const token = jwt.sign(
@@ -61,7 +65,7 @@ export const googleLogin = async (
       "ars2k03",
 
       {
-        expiresIn: "1m",
+        expiresIn: "15m",
       }
 
     );
@@ -79,16 +83,14 @@ export const googleLogin = async (
     );
 
     return res.status(200).json({
-
       message: "Google login successful",
-
       token,
       refreshToken,
-
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        role : user.role,
         picture: payload.picture,
       },
 

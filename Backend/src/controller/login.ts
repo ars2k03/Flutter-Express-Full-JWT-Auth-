@@ -33,7 +33,7 @@ export const login = async (req : Request, res : Response) => {
             "ars2k03", //Private Key
 
             {
-                expiresIn : "1m"
+                expiresIn : "15m"
             }
         );
 
@@ -54,8 +54,10 @@ export const login = async (req : Request, res : Response) => {
             refreshToken,
             user: {
                 id: user._id,
+                name : user.name,
                 email: user.email,
                 role: user.role,
+                picture : user.picture
             }
         });
 

@@ -78,6 +78,12 @@ class _LoginPageState extends State<LoginPage> {
       if (response["success"] == true) {
         final token = response["data"]["token"];
         final refreshToken = response["data"]["refreshToken"];
+        final user = response["data"]["user"];
+
+        final name = user["name"] ?? "Default";
+        final email = user["email"] ?? "Default";
+        final role = user["role"] ?? "user";
+        final picture = user["picture"] ?? "";
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", token);
@@ -87,7 +93,12 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => const HomePage(),
+              builder: (_) => HomePage(
+                name : name,
+                email : email,
+                role : role,
+                picture: picture,
+              ),
             ),
           );
         }
@@ -120,7 +131,12 @@ class _LoginPageState extends State<LoginPage> {
       if (response["success"] == true) {
         final token = response["data"]["token"];
         final refreshToken = response["data"]["refreshToken"];
+        final user = response["data"]["user"];
 
+        final name = user["name"] ?? "Default";
+        final email = user["email"] ?? "Default";
+        final role = user["role"] ?? "user";
+        final picture = user["picture"] ?? "";
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", token);
         await prefs.setString("refreshToken", refreshToken);
@@ -129,7 +145,12 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => const HomePage(),
+              builder: (_) => HomePage(
+                  name : name,
+                  email : email,
+                  role : role,
+                  picture : picture
+              ),
             ),
           );
         }
